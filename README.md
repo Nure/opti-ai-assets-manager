@@ -55,10 +55,6 @@ docker compose up
 - Runs in safe simulation mode when CMP credentials are not configured.
 - Exports detailed XLSX reports.
 
-## Reference repository
-
-This application uses the operational ideas from `Eshpelin/opti-dam-bulk-field-update`, especially spreadsheet-driven workflows, validation, review/reporting mindset, rollback/safety mindset, and batch execution concepts. This app extends that direction for CMS asset discovery, folder import, checksum duplicate detection, and CMS-to-CMP DAM migration.
-
 ## Tabs
 
 ### 1. Scan
