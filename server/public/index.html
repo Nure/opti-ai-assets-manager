@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Optimizely DAM Copilot</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="hero">
+        <nav class="nav">
+          <div class="brand"><img class="brandLogoInline" src="/optimizely-logo.png" alt="Optimizely logo"/><span>Optimizely DAM Copilot</span></div>
+          <div class="navRight">
+            <div class="pill">AI-assisted Assets Manager</div>
+            <a class="ghost" href="https://github.com/Nure/opti-ai-assets-manager.git" target="_blank" rel="noreferrer">GitHub reference</a>
+          </div>
+        </nav>
+        <div class="arc"><div class="arcText">Deterministic discovery + AI intelligence</div><span></span><span></span><span></span><span></span><span></span></div>
+        <section class="heroBody">
+          <div class="badge">✓ Enterprise CMS12 & WordPress migration workflow</div>
+          <h1>CMS12 & WordPress to CMP DAM Migration Copilot</h1>
+          <p>Scan live CMS pages, identify asset URLs, import extra assets from XLSX or folders, remove duplicates by checksum, upload to CMP DAM, and export enterprise-grade reports.</p>
+        </section>
+      </header>
+
+      <main class="panel">
+        <aside class="sidebar">
+          <button id="tab-scan" class="active" type="button">⌕ Scan</button>
+          <button id="tab-download" type="button">⇩ Download assets</button>
+          <button id="tab-migrate" type="button">⇪ Import & Migrate</button>
+          <button id="tab-tag" type="button">◇ Tag Assets Metadata</button>
+          <button id="tab-reports" type="button">▦ Reports</button>
+          <button id="tab-console" type="button">▸ Console</button>
+        </aside>
+
+        <section class="content">
+          <section class="stats dualStats">
+            <div class="statGroup">
+              <h4>Latest scan stats</h4>
+              <div class="statRow">
+                <div class="stat"><small>Pages</small><b id="stat-scan-pages">0</b></div>
+                <div class="stat"><small>References</small><b id="stat-scan-refs">0</b></div>
+                <div class="stat"><small>Unique Assets</small><b id="stat-scan-assets">0</b></div>
+                <div class="stat"><small>Failed Pages</small><b id="stat-scan-failed">0</b></div>
+              </div>
+            </div>
+            <div class="statGroup">
+              <h4>Latest download stats</h4>
+              <div class="statRow">
+                <div class="stat"><small>Requested</small><b id="stat-dl-requested">0</b></div>
+                <div class="stat"><small>Downloaded</small><b id="stat-dl-downloaded">0</b></div>
+                <div class="stat"><small>Metadata Only</small><b id="stat-dl-metadata">0</b></div>
+                <div class="stat"><small>Failed</small><b id="stat-dl-failed">0</b></div>
+              </div>
+            </div>
+            <div class="statGroup">
+              <h4>Latest import & migration stats</h4>
+              <div class="statRow">
+                <div class="stat"><small>Total Assets</small><b id="stat-mig-assets">0</b></div>
+                <div class="stat"><small>Uploaded</small><b id="stat-mig-uploaded">0</b></div>
+                <div class="stat"><small>Duplicates</small><b id="stat-mig-duplicates">0</b></div>
+                <div class="stat"><small>Failed</small><b id="stat-mig-failed">0</b></div>
+              </div>
+            </div>
+            <div class="jobStatus"><b id="job-status">No job yet</b><span id="job-id">Create scan job</span></div>
+          </section>
+
+          <section id="view-scan" class="card grid2">
+            <div>
+              <h2>1. Live domain page-by-page scan</h2>
+              <p class="muted">Select CMS type, enter a live domain, then scan pages one by one. Gemini reviews scan quality and risk; deterministic parsing extracts the URLs.</p>
+
+              <label>CMS Type</label>
+              <select id="cmsType">
+                <option value="cms12">Optimizely CMS12</option>
+                <option value="wordpress">WordPress</option>
+              </select>
+
+              <div class="scanModeBox">
+                <h3 class="sectionTitle noTop">Scan mode</h3>
+                <div class="modeGrid">
+                  <label class="check"><input id="modeTest" name="scanMode" type="checkbox" checked /> Test scan pages</label>
+                  <label class="check"><input id="modeFull" name="scanMode" type="checkbox" /> Full scan</label>
+                  <label class="check"><input id="modeTarget" name="scanMode" type="checkbox" /> Target page</label>
+                </div>
+                <div id="testOptions" class="row">
+                  <div><label>Number of test pages</label><input id="testPageCount" type="number" min="1" value="5" /></div>
+                  <p class="muted compactHelp">Use this for smoke testing before a full migration scan.</p>
+                </div>
+                <div id="targetOptions" class="hidden">
+                  <label>Target page URL</label>
+                  <input id="targetPageUrl" placeholder="https://www.customer-site.com/products/example-page" />
+                  <p class="muted compactHelp">Target page mode scans only this page. Base URL, start page URLs, and CMS API fields are hidden because they are not needed.</p>
+                </div>
+              </div>
+
+              <div id="liveDomainOptions">
+                <label>Live Base URL</label>
+                <input id="baseUrl" placeholder="https://www.customer-site.com" />
+              </div>
+
+              <div id="cms12Fields">
+                <h3 class="sectionTitle">CMS12 API fields</h3>
+                <label>CMS API URL</label><input id="cmsApiUrl" placeholder="https://cms.example.com/api/episerver/v3.0/content" />
+                <label>Bearer Token</label><input id="cmsBearerToken" type="password" placeholder="Optional" />
+                <label>Languages</label><input id="languages" value="en" />
+                <label class="check"><input id="includeBlocks" type="checkbox" checked /> Include blocks / content areas when API is configured</label>
+              </div>
+
+              <div id="wpFields" class="hidden">
+                <h3 class="sectionTitle">WordPress API fields</h3>
+                <label>WordPress REST API URL</label><input id="wpApiUrl" placeholder="https://site.com/wp-json/wp/v2" />
+                <label>Username</label><input id="wpUsername" placeholder="Optional" />
+                <label>Application Password / Token</label><input id="wpPassword" type="password" placeholder="Optional" />
+                <label>Bearer Token</label><input id="wpBearerToken" type="password" placeholder="Optional" />
+                <label class="check"><input id="includeMediaLibrary" type="checkbox" checked /> Include media library when API is configured</label>
+              </div>
+
+              <div id="aiScanReviewBlock">
+                <h3 class="sectionTitle">AI scan review</h3>
+                <label class="check"><input id="enableAiScan" type="checkbox" checked /> Enable AI review during scan</label>
+                <div class="row">
+                  <div><label>AI Provider</label><select id="aiProvider"><option value="gemini">Gemini</option><option value="claude">Claude / Claude Code style</option><option value="openai">OpenAI</option></select></div>
+                  <div><label>Model</label><select id="aiModel"></select></div>
+                </div>
+                <label id="apiKeyLabel">Gemini API Key</label><input id="aiApiKey" type="password" placeholder="Optional if configured in .env" />
+                <label>Custom model override</label><input id="customAiModel" placeholder="Optional. Use an exact provider model ID if it is not listed." />
+              </div>
+
+              <div id="startPageOptions">
+                <label>Start page URLs</label>
+                <textarea id="pageUrls" rows="5" placeholder="Optional. One live page URL per line. If empty, scan starts from the Base URL. Relative paths are supported."></textarea>
+              </div>
+
+              <button id="scanBtn" class="primary" type="button">▶ Run Test Scan</button>
+            </div>
+            <div class="infoBox">
+              <h3>Scan behavior</h3>
+              <ul>
+                <li>Live-domain page-by-page crawl only</li>
+                <li>Test mode uses your selected page count</li>
+                <li>Deterministic parser extracts asset URLs first</li>
+                <li>Gemini, Claude, or OpenAI reviews completeness risk and recommends next checks</li>
+              </ul>
+            </div>
+          </section>
+
+
+          <section id="view-download" class="card hidden">
+            <h2>2. Download assets</h2>
+            <p class="muted">Download source assets to the local machine where the Docker app is running. Files are written directly into <b>./Downloaded on date and time</b> in the app directory through the Docker volume. Nested CMP/XLSX folders are preserved directly inside that timestamped root folder.</p>
+            <label>Download Options</label>
+            <select id="downloadOption">
+              <option value="">Select download option...</option>
+              <option value="xlsx">Option A — Download from XLSX public link</option>
+              <option value="cmp">Option B — Download from CMP DAM</option>
+            </select>
+
+            <div id="downloadXlsxPanel" class="dropCard hidden">
+              <h3>Option A — Download from XLSX public link</h3>
+              <p>Use a public XLSX manifest containing asset URLs. The app downloads files in parallel, preserves folder paths, calculates checksum, and creates a separate download report.</p>
+              <p><a class="linkBtn" href="/api/sample-assets-download.xlsx">Download sample XLSX template</a></p>
+              <label>XLSX public link</label>
+              <input id="downloadXlsxUrl" placeholder="https://example.com/assets-to-download.xlsx" />
+              <button id="downloadXlsxBtn" class="primary" type="button">Download Assets from XLSX</button>
+              <small class="muted">Supported columns: source_url, asset_url, download_url, cmp_url, url, file_name, folder_path, title, asset_id, asset_guid.</small>
+            </div>
+
+            <div id="downloadCmpPanel" class="dropCard hidden">
+              <h3>Option B — Download from CMP DAM</h3>
+              <p>Generate an OAuth bearer token from Client ID/Secret, then Assets by Folder ID or All Assets. CMP folder listing uses offset/page_size pagination and downloads 10 assets at a time.</p>
+              <label>CMP Client ID</label><input id="cmpClientId" placeholder="OAuth app client_id" />
+              <label>CMP Client Secret</label><input id="cmpClientSecret" type="password" placeholder="OAuth app client_secret" />
+              <label>CMP Asset Operation</label>
+              <select id="cmpAssetOperation">
+                <option value="analyze-assets">Downloads Assets Information Only</option>
+                <option value="analyze-assets-metadata">Download CMP DAM Assets Info and Metadata</option>
+                <option value="download-assets" selected>Download Assets only</option>
+              </select>
+              <p class="muted compactHelp">Analyze modes generate XLSX reports without downloading binaries. Metadata mode also calls GET /assets/{asset_id}/fields for labels/field values.</p>
+              <label>CMP API Base URL</label><input id="cmpApiBaseUrl" value="https://api.cmp.optimizely.com/v3" />
+              <label>Token URL</label><input id="cmpTokenUrl" value="https://accounts.cmp.optimizely.com/o/oauth2/v1/token" />
+              <div class="downloadModeBox">
+                <label class="check"><input id="cmpDownloadByFolder" type="radio" name="cmpDownloadScope" value="folder" checked /> Assets by Folder ID</label>
+                <label class="check"><input id="cmpDownloadAll" type="radio" name="cmpDownloadScope" value="all" /> All Assets</label>
+              </div>
+              <div id="cmpFolderFields">
+                <label>Folder ID</label><input id="cmpFolderId" placeholder="Required unless All Assets is selected" />
+                <label class="check"><input id="cmpIncludeSubfolders" type="checkbox" checked /> Include subfolder assets</label>
+              </div>
+              <label>Search text</label><input id="cmpSearchText" placeholder="Optional title/content search" />
+              <label>Asset IDs</label><textarea id="cmpAssetIds" rows="4" placeholder="Optional. One asset ID per line or comma-separated. If provided, folder/download-all listing is skipped."></textarea>
+              <button id="downloadCmpBtn" class="primary" type="button">Run CMP DAM Operation</button>
+              <small class="muted">Retry policy: each file download retries up to 3 times. CMP API list/get/fields calls refresh the bearer token and retry once on 401/403.</small>
+            </div>
+
+
+            <div class="reportActions downloadActions">
+              <a id="downloadExportLink" class="linkBtn disabled" href="#">Export Download XLSX Report</a>
+              <button id="refreshDownloadHistoryBtn" type="button">Refresh Download History</button>
+            </div>
+            <h3>Download history</h3>
+            <p class="muted">Every download operation is stored with date and time. Click a history item to reopen its downloaded-assets table and HTTP trace, or delete older history records.</p>
+            <div id="downloadHistory" class="historyList"></div>
+
+            <h3>Latest download report</h3>
+            <div id="downloadPreview" class="tableWrap scopedScroll"></div>
+            <h3>Download request / response trace</h3>
+            <p class="muted">Shows the authentication endpoint, CMP list/get endpoints, asset download URLs, HTTP response status, and the local path where each successful file was saved. Secrets and bearer tokens are masked.</p>
+            <div id="downloadTracePreview" class="tableWrap scopedScroll"></div>
+          </section>
+
+          <section id="view-migrate" class="card hidden">
+            <h2>3. Import & Migrate — Enterprise CMP asset import</h2>
+            <p class="muted">Drag and drop large nested folders, recreate the folder tree in CMP DAM, upload assets in parallel, checkpoint progress, and export an import-only XLSX report.</p>
+            <details id="importConfigAccordion" class="importAccordion" open>
+              <summary><span>Import configuration</span><span class="chevron">⌄</span></summary>
+              <div class="dropCard importDropZone" id="importDropZone">
+                <h3>Folder drag-and-drop import</h3>
+                <p>Select or drag a local folder. Nested folder paths are preserved and recreated in CMP under the optional parent folder ID.</p>
+                <div class="dropHint" id="importDropHint">
+                  <div class="dropIcon">⇪</div>
+                  <strong>Drop folders or files here</strong>
+                  <span>or click below to choose a folder from your computer</span>
+                </div>
+                <div class="filePickerRow">
+                  <label for="folderInput" class="filePickerBtn">Choose Files</label>
+                  <span id="folderInputCount" class="filePickerCount">No files selected</span>
+                  <input id="folderInput" class="visuallyHidden" type="file" webkitdirectory directory multiple />
+                </div>
+                <p id="folderSelectionSummary" class="muted">No folder selected yet.</p>
+
+                <h3 class="sectionTitle">CMP authentication</h3>
+                <div class="grid2 compactGrid">
+                  <div><label>CMP API Base URL</label><input id="importCmpApiBaseUrl" value="https://api.cmp.optimizely.com/v3" /></div>
+                  <div><label>CMP Token URL</label><input id="importCmpTokenUrl" value="https://accounts.cmp.optimizely.com/o/oauth2/v1/token" /></div>
+                  <div><label>CMP Client ID <span class="requiredMark">required</span></label><input id="importCmpClientId" autocomplete="off" placeholder="CMP OAuth Client ID" /></div>
+                  <div><label>CMP Client Secret <span class="requiredMark">required</span></label><input id="importCmpClientSecret" type="password" autocomplete="off" placeholder="CMP OAuth Client Secret" /></div>
+                  <div class="formNote fullSpan">The Import & Migrate feature uses the same CMP OAuth Client ID and Client Secret authentication flow used by Download Assets.</div>
+                  <div><label>Parent CMP Folder ID <span class="muted">optional</span></label><input id="importParentFolderId" placeholder="Leave empty to create/upload at CMP root" /></div>
+                  <div class="row">
+                    <div><label>Parallel uploads</label><input id="importConcurrency" type="number" min="1" max="25" value="10" /></div>
+                    <div><label>Retry count</label><input id="importRetryCount" type="number" min="1" max="10" value="3" /></div>
+                  </div>
+                </div>
+                <label class="check"><input id="importReuseFolders" type="checkbox" /> Reuse existing CMP folders when a matching folder name exists under the same parent <span class="muted">(optional; lists child folders with pagination)</span></label>
+                <div class="buttonRow">
+                  <button id="startFolderImportBtn" class="primary" type="button">Start CMP Folder Import</button>
+                  <button id="stopImportBtn" class="danger hidden" type="button">Stop Import</button>
+                </div>
+              </div>
+            </details>
+
+            <div class="dropCard importReportCard">
+              <h3>Import recovery and reporting</h3>
+              <p>Every enterprise import writes a checkpoint JSON and an XLSX report independent from Scan and Download features.</p>
+              <div class="buttonRow">
+                <button id="resumeImportBtn" type="button">Resume Previous Import</button>
+                <button id="retryFailedImportBtn" type="button">Retry Failed Only</button>
+                <a id="exportImportLink" class="linkBtn disabled" href="#">Export Import XLSX</a>
+              </div>
+              <div class="miniStats">
+                <div><small>Files</small><b id="stat-import-files">0</b></div>
+                <div><small>Uploaded</small><b id="stat-import-uploaded">0</b></div>
+                <div><small>Folders</small><b id="stat-import-folders">0</b></div>
+                <div><small>Failed</small><b id="stat-import-failed">0</b></div>
+              </div>
+              <h3>Latest Import Report</h3>
+              <div id="importPreview" class="tableWrap importTableWrap"></div>
+              <h3>Import History</h3>
+              <div id="importHistory" class="historyList"></div>
+            </div>
+            <div class="card nestedCard">
+              <h3>Legacy migration execution</h3>
+              <p class="muted">Use this for the earlier scan → de-duplicate → simulated/upload migration workflow.</p>
+              <button id="migrateBtn" type="button">Run Legacy Migration</button>
+            </div>
+            <div id="assetPreview" class="tableWrap"></div>
+          </section>
+
+
+          <section id="view-tag" class="card hidden">
+            <h2>4. Tag Assets Metadata</h2>
+            <p class="muted">Validate an XLSX metadata sheet against CMP fields and labels, perform a mandatory dry run, then execute safe per-field updates for each asset.</p>
+            <div class="grid2 tagGrid">
+              <div class="dropCard">
+                <h3>CMP authentication</h3>
+                <p class="muted">Uses the same CMP OAuth client credentials flow as Download Assets and Import & Migrate.</p>
+                <div class="grid2 compactGrid">
+                  <div><label>CMP API Base URL</label><input id="tagCmpApiBaseUrl" value="https://api.cmp.optimizely.com/v3" /></div>
+                  <div><label>CMP Token URL</label><input id="tagCmpTokenUrl" value="https://accounts.cmp.optimizely.com/o/oauth2/v1/token" /></div>
+                  <div><label>CMP Client ID <span class="requiredMark">required</span></label><input id="tagCmpClientId" autocomplete="off" placeholder="CMP OAuth Client ID" /></div>
+                  <div><label>CMP Client Secret <span class="requiredMark">required</span></label><input id="tagCmpClientSecret" type="password" autocomplete="off" placeholder="CMP OAuth Client Secret" /></div>
+                </div>
+                <h3 class="sectionTitle">Spreadsheet</h3>
+                <p class="muted">Format: <b>AssetID</b>, then one column per CMP field or label. Multi-value cells can use semicolon separators.</p>
+                <div class="filePickerRow">
+                  <label for="tagXlsxInput" class="filePickerBtn">Choose XLSX</label>
+                  <span id="tagXlsxCount" class="filePickerCount">No XLSX selected</span>
+                  <button id="tagClearXlsxBtn" class="secondary smallBtn hidden" type="button" title="Remove the selected XLSX so you can upload a corrected file">Remove XLSX</button>
+                  <input id="tagXlsxInput" class="visuallyHidden" type="file" accept=".xlsx,.xls" />
+                </div>
+                <p id="tagXlsxHelp" class="muted compactHelp">Dry Run uses the currently selected XLSX only. If a dry run fails, remove the file, fix the spreadsheet, and upload the corrected XLSX.</p>
+                <div class="row">
+                  <div><label>Parallel updates</label><input id="tagConcurrency" type="number" min="1" max="20" value="5" /></div>
+                  <div><label>Retry count</label><input id="tagRetryCount" type="number" min="1" max="10" value="3" /></div>
+                </div>
+                <div class="buttonRow">
+                  <button id="tagDryRunBtn" class="primary" type="button">Dry Run</button>
+                  <button id="tagExecuteBtn" type="button" disabled>Execute</button>
+                </div>
+                <small class="muted">Execution is disabled until a dry run has produced validated asset-field mappings.</small>
+              </div>
+
+              <div class="dropCard">
+                <h3>Dry Run and execution safety</h3>
+                <p>Dry Run fetches CMP fields and label groups, maps XLSX headers to CMP field/label IDs, resolves dropdown/label option text to IDs, and reports missing fields or invalid values before any update is sent.</p>
+                <div class="statRow tagStats">
+                  <div class="stat"><small>Assets</small><b id="stat-tag-assets">0</b></div>
+                  <div class="stat"><small>Columns</small><b id="stat-tag-columns">0</b></div>
+                  <div class="stat"><small>Ready</small><b id="stat-tag-ready">0</b></div>
+                  <div class="stat"><small>Issues</small><b id="stat-tag-issues">0</b></div>
+                </div>
+                <div class="reportActions">
+                  <a id="tagExportLink" class="linkBtn disabled" href="#">Export Tag XLSX Report</a>
+                  <button id="refreshTagHistoryBtn" type="button">Refresh Tag History</button>
+                </div>
+              </div>
+            </div>
+
+            <h3>Tag history</h3>
+            <div id="tagHistory" class="historyList"></div>
+
+            <h3>Latest Tag Assets Metadata Report</h3>
+            <div id="tagPreview" class="tableWrap scopedScroll"></div>
+          </section>
+
+          <section id="view-reports" class="card hidden">
+            <h2>5. Reports and visibility</h2>
+            <p class="muted">Latest reports are retained for dashboard visibility. Older historical reports can be deleted.</p>
+            <div class="reportActions">
+              <a id="exportLink" class="linkBtn disabled" href="#">Export Latest XLSX Report</a>
+              <button id="refreshHistoryBtn" type="button">Refresh History</button>
+            </div>
+            <div class="grid2 reportsGrid">
+              <div>
+                <h3>Report History</h3>
+                <div id="reportHistory" class="historyList"></div>
+              </div>
+              <div>
+                <h3 id="selectedReportTitle">Latest report preview</h3>
+                <div id="reportPreview" class="tableWrap"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-console" class="card hidden consoleCard">
+            <h2>Realtime execution console</h2>
+            <p class="muted">Logs are pulled every 2 seconds while operations are running, and every 5 seconds while idle.</p>
+            <div class="consoleToolbar">
+              <span id="consoleStatus">No active job</span>
+              <button id="clearConsoleBtn" type="button">Clear local view</button>
+            </div>
+            <div id="log" class="consoleLog"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>
