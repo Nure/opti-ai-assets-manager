@@ -1,4 +1,4 @@
-FROM node:20-bullseye-slim
+FROM node:22-alpine
 
 WORKDIR /app/server
 ENV NODE_ENV=production
